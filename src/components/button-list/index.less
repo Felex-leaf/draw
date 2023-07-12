@@ -1,0 +1,17 @@
+.button-list {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+
+  &-right {
+    justify-content: flex-end;
+  }
+
+  .ant-btn {
+    min-width: 0;
+
+    &:not(:last-child) {
+      margin-right: 8px;
+    }
+  }
+}
