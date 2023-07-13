@@ -4,7 +4,7 @@ import classNames from 'classnames';
 import './index.less';
 
 export interface BtnProps extends ButtonProps {
-  text: string;
+  text?: string;
 }
 
 export interface ButtonListProps {

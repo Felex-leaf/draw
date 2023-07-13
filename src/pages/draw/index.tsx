@@ -1,4 +1,4 @@
-import { ButtonList, ButtonListProps } from '@/components';
+import { SelectBtnList, SelectBtnListProps } from '@/components';
 import { Button, ColorPicker } from 'antd';
 import { Color } from 'antd/es/color-picker';
 import { ColorFactory } from 'antd/es/color-picker/color';
@@ -9,7 +9,6 @@ import DrawContainer, {
   DrawContainerProps,
   DrawContainerRef,
   DrawContainerStatus,
-  ERASER,
 } from './components/draw-container';
 import PenSize from './components/pen-size';
 
@@ -27,7 +26,7 @@ import Socket, {
   LISTEN_LEAVE_ROOM,
   LISTEN_REQUEST_IMG,
   REQUEST_IMG,
-} from './socket';
+} from '../../socket';
 
 const DEFAULT: DrawSocketStatus = {
   status: DRAW,
@@ -50,10 +49,10 @@ export default function Draw() {
   if (!room) n('/');
 
   // 改变鼠标操作类型
-  const changeStatus = (s: DrawContainerStatus) => {
-    return () => {
-      setStatus(s);
-    };
+  const changeStatus: SelectBtnListProps['onChange'] = (s) => {
+    if (s) {
+      setStatus(s as DrawContainerStatus);
+    }
   };
 
   // 清空画布
@@ -145,8 +144,6 @@ export default function Draw() {
 
   const initSocket = () => {
     const s = socket.current;
-    const { instance } = s || {};
-    if (!instance.connected) return;
     // 加入房间
     join();
     // 画布同步
@@ -160,7 +157,7 @@ export default function Draw() {
     // 离开房间时，清空监听
     s[LISTEN_LEAVE_ROOM]?.((d: DrawSocketStatus) => {
       if (checkId(d)) {
-        instance.removeAllListeners();
+        s.removeAllListeners();
       }
     });
     // 获取画布信息
@@ -188,14 +185,14 @@ export default function Draw() {
     });
   }, []);
 
-  const btnList: ButtonListProps['btnList'] = [
-    {
-      text: '橡皮擦',
-      onClick: changeStatus(ERASER),
-    },
+  const options: SelectBtnListProps['options'] = [
     {
       text: '画笔',
-      onClick: changeStatus(DRAW),
+      value: DrawContainerStatus.DRAW,
+    },
+    {
+      text: '橡皮擦',
+      value: DrawContainerStatus.ERASER,
     },
     {
       text: '清空',
@@ -230,11 +227,16 @@ export default function Draw() {
 
   return (
     <div>
-      {!isView && <ButtonList btnList={btnList} />}
+      {!isView && (
+        <SelectBtnList
+          onChange={changeStatus}
+          options={options}
+          value={status}
+        />)
+      }
       {!isView && <PenSize value={penSize} onChange={setPenSize} />}
       {!isView && <ColorPicker value={color} format="rgb" onChange={setColor} />}
       <Button onClick={leave}>离开</Button>
-      <Button onClick={join}>加入</Button>
       <DrawContainer ref={ref} {...commonProps} {...props} />
     </div>
   );

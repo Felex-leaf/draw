@@ -1,7 +1,7 @@
 import { Color } from 'antd/es/color-picker';
 import io, { Socket } from 'socket.io-client';
-import { DrawContainerEvent, DrawContainerStatus } from './components/draw-container';
-import { DRAW_EVENT, DRAW_LISTEN, DRAW_LISTEN_MAP } from './consts';
+import { DrawContainerEvent, DrawContainerStatus } from '../pages/draw/components/draw-container';
+import { DRAW_EVENT, DRAW_LISTEN, DRAW_LISTEN_MAP } from '../pages/draw/consts';
 
 export const { ACTION, REQUEST_IMG, JOIN_ROOM, LEAVE_ROOM, EMIT_IMG } = DRAW_EVENT;
 export const {
@@ -50,6 +50,7 @@ class DrawSocket {
     this.keys.forEach((key) => {
       // @ts-ignore
       this[DRAW_LISTEN_MAP[key]] = (callback: CallBack) => {
+        if (!this.instance?.connected) return;
         this.instance.on(key, (payload: string, ...arg: any[]) => {
           let p;
           try {
@@ -67,6 +68,7 @@ class DrawSocket {
     this.keys.forEach((key) => {
       // @ts-ignore
       this[key] = (payload: string, ...arg: any[]) => {
+        if (!this.instance?.connected) return;
         let p: string;
         if (typeof payload === 'string') {
           p = payload;
@@ -76,6 +78,10 @@ class DrawSocket {
         this.instance.emit(key, p, ...arg);
       };
     });
+  }
+
+  removeAllListeners = () => {
+    this.instance?.removeAllListeners();
   }
 }
 
