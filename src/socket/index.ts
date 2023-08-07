@@ -3,12 +3,13 @@ import io, { Socket } from 'socket.io-client';
 import { DrawContainerEvent, DrawContainerStatus } from '../pages/draw/components/draw-container';
 import { DRAW_EVENT, DRAW_LISTEN, DRAW_LISTEN_MAP } from '../pages/draw/consts';
 
-export const { ACTION, REQUEST_IMG, JOIN_ROOM, LEAVE_ROOM, EMIT_IMG } = DRAW_EVENT;
+export const { ACTION, REQUEST_IMG, JOIN_ROOM, LEAVE_ROOM, EMIT_IMG, DISCONNECT, CONNECT, ROOMS } = DRAW_EVENT;
 export const {
   LISTEN_ACTION,
   LISTEN_REQUEST_IMG,
   LISTEN_JOIN_ROOM,
   LISTEN_LEAVE_ROOM,
+  LISTEN_ROOMS,
   LISTEN_EMIT_IMG,
   LISTEN_CONNECT,
   LISTEN_DISCONNECT,
@@ -50,7 +51,7 @@ class DrawSocket {
     this.keys.forEach((key) => {
       // @ts-ignore
       this[DRAW_LISTEN_MAP[key]] = (callback: CallBack) => {
-        if (!this.instance?.connected) return;
+        if (!this.instance?.connected && ![CONNECT, DISCONNECT].includes(key)) return;
         this.instance.on(key, (payload: string, ...arg: any[]) => {
           let p;
           try {
@@ -68,6 +69,9 @@ class DrawSocket {
     this.keys.forEach((key) => {
       // @ts-ignore
       this[key] = (payload: string, ...arg: any[]) => {
+        if (key === JOIN_ROOM) {
+          console.log(this.instance?.connected);
+        }
         if (!this.instance?.connected) return;
         let p: string;
         if (typeof payload === 'string') {

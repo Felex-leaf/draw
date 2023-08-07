@@ -2,7 +2,7 @@ import { SelectBtnList, SelectBtnListProps } from '@/components';
 import { Button, ColorPicker } from 'antd';
 import { Color } from 'antd/es/color-picker';
 import { ColorFactory } from 'antd/es/color-picker/color';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import DrawContainer, {
   DRAW,
@@ -19,14 +19,13 @@ import Socket, {
   JOIN_ROOM,
   LEAVE_ROOM,
   LISTEN_ACTION,
-  LISTEN_CONNECT,
-  LISTEN_DISCONNECT,
   LISTEN_EMIT_IMG,
   LISTEN_JOIN_ROOM,
   LISTEN_LEAVE_ROOM,
   LISTEN_REQUEST_IMG,
   REQUEST_IMG,
 } from '../../socket';
+import useConnect from '@/hooks/useConnect';
 
 const DEFAULT: DrawSocketStatus = {
   status: DRAW,
@@ -43,7 +42,6 @@ export default function Draw() {
   const isView = searchParams.get('type') === 'view';
   const room = searchParams.get('room') as string;
   const ref = useRef<DrawContainerRef>(null);
-  const socket = useRef(Socket);
   const sId = useRef<string>();
 
   if (!room) n('/');
@@ -62,7 +60,7 @@ export default function Draw() {
 
   // 请求画布数据加载在页面上
   const canvasDataRequest = () => {
-    socket.current?.[REQUEST_IMG]?.({ room, id: socket.current?.instance?.id });
+    Socket?.[REQUEST_IMG]?.({ room, id: Socket?.instance?.id });
   };
 
   // 重连后重绘画布
@@ -80,7 +78,7 @@ export default function Draw() {
   // 获取图片信息
   const getCanvasData = () => {
     const { canvas } = ref.current || {};
-    socket.current?.[EMIT_IMG]?.({
+    Socket?.[EMIT_IMG]?.({
       room,
       id: sId.current,
       data: `${canvas?.toDataURL('image/png')}?${Date.now()}`,
@@ -92,7 +90,7 @@ export default function Draw() {
     let s = e;
     if (isView) {
       const { status: action, type: t, id: socketId } = e || {};
-      if (socketId === socket.current?.instance?.id) return;
+      if (socketId === Socket?.instance?.id) return;
       if (t === 'clear') {
         clear();
         return;
@@ -112,9 +110,9 @@ export default function Draw() {
         status,
         penSize,
         color,
-        id: socket.current?.instance?.id,
+        id: Socket?.instance?.id,
       };
-      socket.current?.[ACTION]?.(s);
+      Socket?.[ACTION]?.(s);
     }
   };
 
@@ -124,50 +122,49 @@ export default function Draw() {
   };
 
   const checkId = (d?: DrawSocketStatus) => {
-    return d?.id === socket.current?.instance?.id;
+    return d?.id === Socket?.instance?.id;
   }
 
   const leave = () => {
-    socket.current?.[LEAVE_ROOM]?.({
+    Socket?.[LEAVE_ROOM]?.({
       room,
-      id: socket.current?.instance?.id,
+      id: Socket?.instance?.id,
     });
     n('/');
   };
 
   const join = () => {
-    socket.current?.[JOIN_ROOM]?.({
+    Socket?.[JOIN_ROOM]?.({
       room,
-      id: socket.current?.instance?.id,
+      id: Socket?.instance?.id,
     });
   };
 
   const initSocket = () => {
-    const s = socket.current;
     // 加入房间
     join();
     // 画布同步
-    if (isView) s[LISTEN_ACTION]?.(stateSynchronization);
+    if (isView) Socket[LISTEN_ACTION]?.(stateSynchronization);
     // 成功加入房间
-    s[LISTEN_JOIN_ROOM]?.((d: DrawSocketStatus) => {
+    Socket[LISTEN_JOIN_ROOM]?.((d: DrawSocketStatus) => {
       if (!checkId(d)) {
         canvasDataRequest();
       }
     });
     // 离开房间时，清空监听
-    s[LISTEN_LEAVE_ROOM]?.((d: DrawSocketStatus) => {
+    Socket[LISTEN_LEAVE_ROOM]?.((d: DrawSocketStatus) => {
       if (checkId(d)) {
-        s.removeAllListeners();
+        Socket.removeAllListeners();
       }
     });
     // 获取画布信息
-    s[LISTEN_REQUEST_IMG]?.((d: DrawSocketStatus) => {
+    Socket[LISTEN_REQUEST_IMG]?.((d: DrawSocketStatus) => {
       if (checkId(d)) return;
       sId.current = d?.id;
       getCanvasData();
     });
     // 接受画布信息并绘制在画布上
-    s[LISTEN_EMIT_IMG]?.((d: DrawSocketStatus) => {
+    Socket[LISTEN_EMIT_IMG]?.((d: DrawSocketStatus) => {
       const { data } = d || {};
       if (checkId(d)) {
         redraw(data as string);
@@ -175,15 +172,7 @@ export default function Draw() {
     });
   };
 
-  useEffect(() => {
-    const s = socket.current;
-    const { instance } = s || {};
-    if (instance.connected) initSocket();
-    s[LISTEN_CONNECT]?.(initSocket);
-    s[LISTEN_DISCONNECT]?.(() => {
-      instance.removeAllListeners();
-    });
-  }, []);
+  useConnect(initSocket);
 
   const options: SelectBtnListProps['options'] = [
     {
