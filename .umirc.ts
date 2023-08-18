@@ -5,7 +5,13 @@ export default defineConfig({
     { path: "/", component: "rooms" },
     { path: "/draw", component: "draw" },
     { path: "/live2d", component: "live2d" },
-    { path: "/chinese/chess", component: "chineseChess" },
+    { path: "/sheep", component: "sheep" },
   ],
   npmClient: 'yarn',
+  lessLoader: {
+    modifyVars: {
+      // 或者可以通过 less 文件覆盖（文件路径为绝对路径）
+      hack: 'true; @import "/src/styles/index.less";',
+    },   
+  },
 });

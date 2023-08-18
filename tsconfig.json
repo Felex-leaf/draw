@@ -33,7 +33,7 @@
         "@@/*": ["./src/.umi/*", "./src/.umi-production/*"],
       },
   },
-  "include": ["mock/**/*", "src/**/*", "config/**/*", ".umirc.ts", "typings.d.ts"],
+  "include": ["mock/**/*", "src/**/*", "config/**/*", "./.umirc.ts", "typings.d.ts"],
   "exclude": [
       "node_modules",
       "lib",
