@@ -6,6 +6,7 @@ export default defineConfig({
     { path: "/draw", component: "draw" },
     { path: "/live2d", component: "live2d" },
     { path: "/sheep", component: "sheep" },
+    { path: "/chinese-chess", component: "chinese-chess" },
   ],
   npmClient: 'yarn',
   lessLoader: {

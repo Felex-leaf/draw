@@ -1,9 +1,9 @@
-import { SelectBtnList, SelectBtnListProps } from '@/components';
 import { Button, ColorPicker } from 'antd';
 import { Color } from 'antd/es/color-picker';
 import { ColorFactory } from 'antd/es/color-picker/color';
 import { useMemo, useRef, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { SelectBtnList, SelectBtnListProps } from '@/components';
 import DrawContainer, {
   DRAW,
   DrawContainerProps,
@@ -123,7 +123,7 @@ export default function Draw() {
 
   const checkId = (d?: DrawSocketStatus) => {
     return d?.id === Socket?.instance?.id;
-  }
+  };
 
   const leave = () => {
     Socket?.[LEAVE_ROOM]?.({
@@ -207,12 +207,12 @@ export default function Draw() {
 
   const props: DrawContainerProps = !isView
     ? {
-        onClear,
-        onAction: isView ? undefined : stateSynchronization,
-      }
+      onClear,
+      onAction: isView ? undefined : stateSynchronization,
+    }
     : {
-        mode: 'view',
-      };
+      mode: 'view',
+    };
 
   return (
     <div>
@@ -221,8 +221,8 @@ export default function Draw() {
           onChange={changeStatus}
           options={options}
           value={status}
-        />)
-      }
+        />
+      )}
       {!isView && <PenSize value={penSize} onChange={setPenSize} />}
       {!isView && <ColorPicker value={color} format="rgb" onChange={setColor} />}
       <Button onClick={leave}>离开</Button>

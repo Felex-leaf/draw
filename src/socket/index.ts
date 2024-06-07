@@ -86,7 +86,7 @@ class DrawSocket {
 
   removeAllListeners = () => {
     this.instance?.removeAllListeners();
-  }
+  };
 }
 
 const socket: DrawSocket & Partial<Record<DRAW_EVENT, Emit>> & Partial<Record<DRAW_LISTEN, Listen>> = new DrawSocket();
